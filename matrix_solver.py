@@ -82,7 +82,6 @@ def solve_matrix(matrix):
             element2 = False
         if N == n - 1 and M == m - 2:
             #done
-            print('from h:', matrix)
             return matrix
         elif element1 == 1 and element2 == 1:
             #row operation
