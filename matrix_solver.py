@@ -1,18 +1,18 @@
 import fractions
 frac = fractions.Fraction
 
-#test matrix:
-#matrix = [[frac(2), frac(3), frac(10)], [frac(1), frac(4), frac(20)]]
-
 def solve_matrix(matrix):
     #number of rows
     n = len(matrix)
-    #number of columns (including b colunm)
+    #number of columns (including b column)
     m = len(matrix[0])
     
-    def subtract_rows(matrix, n1, n2, nproduct):
+    def subtract_rows(matrix, n1, n2, nproduct, pivot):
+        N = pivot[0]
+        M = pivot[1]
+        C = matrix[N][M] / matrix[N - 1][M]
         for i in range(m):
-            matrix[nproduct][i] = matrix[n1][i] - matrix[n2][i]
+            matrix[nproduct][i] = matrix[n1][i] * C - matrix[n2][i]
         return matrix
     
     def reduce_leading_entries(matrix, n):
@@ -25,6 +25,22 @@ def solve_matrix(matrix):
         for y in range(m):
             matrix[n][y] = matrix[n][y] / divisor
         return matrix
+    
+    def find_leading_entries(matrix):
+        def find_pivot(row):
+            for i in range(len(row)):
+                if row[i] == 1:
+                    return i
+            return None
+        columns = set([])
+        pivots = set([])
+        for i in range(len(matrix)):
+            pivot = find_pivot(matrix[i])
+            if pivot != None:
+                columns.add(pivot)
+                pivots.add((i, pivot))
+        return (columns, pivots)
+
 
     def compare(row1, row2):
         i = 0
@@ -55,7 +71,11 @@ def solve_matrix(matrix):
                 i = 0
         return matrix
     
+    '''I was tired of coding so I used a bad solution where
+    h reduces matrix to echelon form, and h2 reduces it to
+    reduced echelon form. Very inefficient.'''
     def h(matrix, N, M):
+        stuff = find_leading_entries(matrix)
         element1 = matrix[N][M]
         if N != n - 1:
             element2 = matrix[N + 1][M]
@@ -69,14 +89,48 @@ def solve_matrix(matrix):
             if compare(matrix[N], matrix[N + 1]):
                 earlier = N + 1
                 later = N
-                matrix = subtract_rows(matrix, later, earlier, N)
+                matrix = subtract_rows(matrix, later, earlier, N, (N + 1, M))
                 matrix = reduce_leading_entries(matrix, N + 1)
                 matrix = reduce_leading_entries(matrix, N)
                 matrix = sort_rows(matrix)
             else:
                 earlier = N
                 later = N + 1
-                matrix = subtract_rows(matrix, later, earlier, N + 1)
+                matrix = subtract_rows(matrix, later, earlier, N + 1, (N + 1, M))
+                matrix = reduce_leading_entries(matrix, N + 1)
+                matrix = reduce_leading_entries(matrix, N)
+                matrix = sort_rows(matrix)
+            return h(matrix, 0, 0)
+        elif M == m - 2:
+            #move down
+            return h(matrix, N + 1, 0)
+        else:
+            #move right
+            if M == m - 2:
+                return h(matrix, N + 1, 0)
+            else: return h(matrix, N, M + 1)
+
+    def h2(matrix, N, M):
+        stuff = find_leading_entries(matrix)
+        pivots = stuff[1]
+        columns = stuff[0]
+        element1 = matrix[N][M]
+        if N == n - 1 and M == m - 2:
+            #done
+            return matrix
+        elif {M}.issubset(columns) and element1 != 0 and not {(N, M)}.issubset(pivots):
+            #row operation
+            if compare(matrix[N], matrix[N + 1]):
+                earlier = N + 1
+                later = N
+                matrix = subtract_rows(matrix, later, earlier, N, (N + 1, M))
+                matrix = reduce_leading_entries(matrix, N + 1)
+                matrix = reduce_leading_entries(matrix, N)
+                matrix = sort_rows(matrix)
+            else:
+                earlier = N
+                later = N + 1
+                matrix = subtract_rows(matrix, later, earlier, N + 1, (N + 1, M))
                 matrix = reduce_leading_entries(matrix, N + 1)
                 matrix = reduce_leading_entries(matrix, N)
                 matrix = sort_rows(matrix)
@@ -92,7 +146,7 @@ def solve_matrix(matrix):
     for i in range(len(matrix)):
         matrix = reduce_leading_entries(matrix, i)
     matrix = sort_rows(matrix)
-    return h(matrix, 0, 0)
+    return h2(h(matrix, 0, 0), 0, 0)
 
 
 def ask_for_row(number):
