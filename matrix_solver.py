@@ -75,7 +75,6 @@ def solve_matrix(matrix):
     h reduces matrix to echelon form, and h2 reduces it to
     reduced echelon form. Very inefficient.'''
     def h(matrix, N, M):
-        stuff = find_leading_entries(matrix)
         element1 = matrix[N][M]
         if N != n - 1:
             element2 = matrix[N + 1][M]
@@ -83,6 +82,7 @@ def solve_matrix(matrix):
             element2 = False
         if N == n - 1 and M == m - 2:
             #done
+            print('from h:', matrix)
             return matrix
         elif element1 == 1 and element2 == 1:
             #row operation
@@ -134,15 +134,16 @@ def solve_matrix(matrix):
                 matrix = reduce_leading_entries(matrix, N + 1)
                 matrix = reduce_leading_entries(matrix, N)
                 matrix = sort_rows(matrix)
-            return h(matrix, 0, 0)
+            return h2(matrix, 0, 0)
         elif M == m - 2:
             #move down
-            return h(matrix, N + 1, 0)
+            return h2(matrix, N + 1, 0)
         else:
             #move right
             if M == m - 2:
-                return h(matrix, N + 1, 0)
-            else: return h(matrix, N, M + 1)
+                return h2(matrix, N + 1, 0)
+            else: return h2(matrix, N, M + 1)
+    
     for i in range(len(matrix)):
         matrix = reduce_leading_entries(matrix, i)
     matrix = sort_rows(matrix)
